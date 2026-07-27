@@ -1,0 +1,42 @@
+Windows Cloud PC​ - Anydesk​
+no:
+workflow_dispatch:
+jobs:
+build:
+nome: Iniciar a construção...
+runs-on: windows-latest
+timeout-minutes: 10080
+env:
+PROCESSOR_COUNT: 4
+OPENGL: "1"
+GITHUB​_PRESERVE_WORKFLOW: true
+steps:
+- name: Baixar e instalar o necessário
+run: |
+Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/7eiczvgil84czu55dxep3/Downloads.bat?rlkey=wzdc1wxjsph2b7r0atplmdz3p&dl=1" -OutFile "Downloads.bat"
+cmd /c Downloads.bat
+- name: Entrar no AnyDesk
+run: |
+if (Test-Path "start.bat") {
+cmd /c start.bat
+} else {
+Write-Host "Arquivo start.bat não encontrado. Verifique a configuração."
+}
+- name: Monitorar e reiniciar o AnyDesk se necessário
+run: |
+while ($true) {
+$process = Get-Process -Name "AnyDesk" -ErrorAction SilentlyContinue
+if (-not $process) {
+Write-Host "AnyDesk não está em execução, reiniciando..."
+cmd /c start.bat
+}
+Start-Sleep -Seconds 300
+}
+- name: Contador de tempo (tarefa de longa duração)
+run: |
+Start-Sleep -Seconds 604800
+- name: Limpar arquivos temporários
+if: success()
+run: |
+Remove-Item Downloads.bat -Force
+Write-Host "Limpeza completa."
